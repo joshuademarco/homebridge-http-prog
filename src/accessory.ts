@@ -13,6 +13,7 @@ import {
 
 let hap: HAP;
 
+//TEST
 
 
 export = (api: API) => {
