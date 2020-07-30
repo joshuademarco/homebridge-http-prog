@@ -1,7 +1,7 @@
 {
   "name": "homebridge-http-prog",
   "version": "0.0.1-ALPHA",
-  "description": "An example accessory plugin for programmable http",
+  "description": "An example accessory plugin for programmable http services",
   "main": "dist/accessory.js",
   "scripts": {
     "clean": "rimraf ./dist",
@@ -28,6 +28,9 @@
   },
   "bugs": {
     "url": "http://github.com/joshuademarco/homebridge-http-prog/issues"
+  },
+  "dependencies": {
+    "colorsys": "^1.0.22"
   },
   "devDependencies": {
     "@types/node": "10.17.19",
