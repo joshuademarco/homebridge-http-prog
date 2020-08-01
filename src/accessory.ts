@@ -19,7 +19,7 @@ let hap: HAP;
 
 export = (api: API) => {
   hap = api.hap;
-  api.registerAccessory("Switch", Switch);
+  api.registerAccessory('homebridge-http-prog', 'http-prog', Switch);
 };
 
 class Switch implements AccessoryPlugin {
@@ -90,7 +90,8 @@ class Switch implements AccessoryPlugin {
 
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "Joshua De Marco")
-      .setCharacteristic(hap.Characteristic.Model, "Arduino Lightstrip LED");
+      .setCharacteristic(hap.Characteristic.Model, "Arduino Lightstrip LED")
+      .setCharacteristic(hap.Characteristic.SerialNumber, "123-123-123");
 
     log.info("Switch finished initializing!");
   }
