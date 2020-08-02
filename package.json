@@ -15,7 +15,9 @@
     "homebridge": ">=1.0.0"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "homekit",
+    "http"
   ],
   "license": "ISC",
   "files": [
