@@ -53,6 +53,7 @@ class Switch implements AccessoryPlugin {
       })
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.bulbOn = value as boolean;
+        this.setColor();
         log.info("SET of Bulb: " + (this.bulbOn? "ON":"OFF"));
         callback();
       });
