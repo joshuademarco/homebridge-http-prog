@@ -62,7 +62,8 @@ class Switch implements AccessoryPlugin {
         log.info("GET Hue: " + (this.hue));
         callback(undefined, this.hue);
       })
-      .on(CharacteristicEventTypes.SET, (callback: CharacteristicGetCallback) => {
+      .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        this.hue = value as number;
         this.setColor();
         log.info("SET Hue: " + (this.hue));
         callback();
@@ -72,7 +73,8 @@ class Switch implements AccessoryPlugin {
         log.info("GET Saturation: " + (this.saturation));
         callback(undefined, this.saturation);
       })
-      .on(CharacteristicEventTypes.SET, (callback: CharacteristicGetCallback) => {
+      .on(CharacteristicEventTypes.SET, (value: CharacteristicValue ,callback: CharacteristicSetCallback) => {
+        this.saturation = value as number;
         this.setColor();
         log.info("SET Saturation: " + (this.saturation));
         callback();
@@ -83,6 +85,7 @@ class Switch implements AccessoryPlugin {
         callback(undefined, this.power);
       })
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        this.brightness = value as number;
         this.setColor();
         log.info("SET of Bulb: " + (this.brightness))
         callback();
