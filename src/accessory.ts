@@ -13,7 +13,17 @@ import {
 } from "homebridge";
 import { callbackify } from "util";
 import { hasUncaughtExceptionCaptureCallback } from "process";
+import { url } from "inspector";
+import request = require("request");
 const colorsys = require('colorsys');
+/**
+ * Parse the config and instantiate the object.
+ *
+ * @summary 
+ * @constructor
+ * @param {function} log 
+ * @param {object} config 
+ */
 
 let hap: HAP;
 
@@ -32,6 +42,12 @@ class Switch implements AccessoryPlugin {
   private saturation: number;
   private hue: number;
   private bulbOn = false;
+  private http_method: string;
+  private user_agent: string;
+  private url: string;
+  private port: number;
+  private timeout: number;
+  private body: JSON;
   private readonly informationService: Service;
   private readonly lightbulbService: Service;
 
@@ -39,10 +55,18 @@ class Switch implements AccessoryPlugin {
     this.log = log;
     this.config = config;
     this.name = config.name;
+    
     this.power = 0;
     this.brightness = 100;
     this.saturation = 0;
     this.hue = 0;
+
+    this.http_method = config.http_method || 'GET';
+    this.user_agent = config.user_agent || 'Homebridge UA';
+    this.url = config.url || 'localhost';
+    this.port = config.port || '80';
+    this.timeout = config.timeout || '100';
+    this.body = config.body || null;
 
 
     this.lightbulbService = new hap.Service.Lightbulb(this.name);
@@ -54,6 +78,8 @@ class Switch implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.bulbOn = value as boolean;
         this.setColor();
+
+        this._httpRequest(this.url, this.body, this.http_method, this.timeout, callback)
         log.info("SET of Bulb: " + (this.bulbOn? "ON":"OFF"));
         callback();
       });
@@ -91,7 +117,6 @@ class Switch implements AccessoryPlugin {
         callback();
       });
 
-
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "Joshua De Marco")
       .setCharacteristic(hap.Characteristic.Model, "Arduino Lightstrip LED")
@@ -113,18 +138,25 @@ class Switch implements AccessoryPlugin {
     }
   }
 
+     
+  _httpRequest(url: string, body: JSON, method: string, timeout: number, callback: CharacteristicSetCallback) {
+    request(url, {
+      method: method,
+      timeout: timeout,
+      rejectUnauthorized: false,
+      body: body
+    });
+    callback();
+  }
 
   identify(): void {
     this.log("Identify!");
   }
 
-
-  
   getServices(): Service[] {
     return [
       this.informationService,
       this.lightbulbService,
     ];
   }
-
 }

@@ -32,13 +32,15 @@
     "url": "http://github.com/joshuademarco/homebridge-http-prog/issues"
   },
   "dependencies": {
-    "colorsys": "^1.0.22"
-  },
+    "colorsys": "^1.0.22",
+    "request": "^2.88.2"
+    },
   "devDependencies": {
     "@types/node": "10.17.19",
-    "typescript": "^3.8.3",
+    "homebridge": "^1.1.1",
     "rimraf": "^3.0.2",
-    "homebridge": "^1.0.4"
+    "typescript": "^3.9.7",
+    "@types/request": "^2.48.5"
   },
   "homepage": "https://github.com/joshuademarco/homebridge-http-prog#readme"
 }
