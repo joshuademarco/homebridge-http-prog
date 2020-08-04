@@ -1,6 +1,6 @@
 {
   "name": "homebridge-http-prog",
-  "version": "0.0.7-0",
+  "version": "0.0.8-0",
   "description": "An example accessory plugin for programmable http services",
   "main": "dist/accessory.js",
   "scripts": {
@@ -34,7 +34,7 @@
   "dependencies": {
     "colorsys": "^1.0.22",
     "request": "^2.88.2"
-    },
+  },
   "devDependencies": {
     "@types/node": "10.17.19",
     "homebridge": "^1.1.1",
