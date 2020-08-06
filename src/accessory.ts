@@ -37,7 +37,7 @@ class Switch implements AccessoryPlugin {
   private readonly log: Logging;
   private readonly name: string;
   private readonly config: AccessoryConfig;
-  private power: number;
+  power: number;
   private brightness: number;
   private saturation: number;
   private hue: number;
@@ -47,8 +47,10 @@ class Switch implements AccessoryPlugin {
   private url: string;
   private port: number;
   private timeout: number;
-  private state_body: JSON;
+  private state_on_body: JSON;
+  private state_off_body: JSON;
   private update_rgb_body: JSON;
+  private send_http: Object;
   private readonly informationService: Service;
   private readonly lightbulbService: Service;
 
@@ -62,13 +64,20 @@ class Switch implements AccessoryPlugin {
     this.saturation = 0;
     this.hue = 0;
 
+    this.send_http = config.send_http[config.send_http.url, config.send_http.http_method];
+    log.info("--------------------------------------------------------------------");
+    log.info(this.send_http.toString());
+    log.info("--------------------------------------------------------------------");
+
     this.http_method = config.http_method || 'GET';
     this.user_agent = config.user_agent || 'Homebridge UA';
-    this.url = config.url || 'localhost';
+    this.url = config.url || 'http://localhost';
     this.port = config.port || '80';
     this.timeout = config.timeout || '100';
-    this.state_body = config.state_body || null;
+    this.state_on_body = config.state_on_body || null;
+    this.state_off_body = config.state_off_body || null;
     this.update_rgb_body = config.update_rgb__body || null;
+
 
 
     this.lightbulbService = new hap.Service.Lightbulb(this.name);
@@ -80,7 +89,8 @@ class Switch implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.bulbOn = value as boolean;
         this.setColor();
-        this._httpRequest(this.url, this.state_body, this.http_method, this.timeout, callback)
+        if(this.bulbOn){}
+        //this._httpRequest(this.url, this.state_on_body, this.http_method, this.timeout, callback)
         log.info("SET of Bulb: " + (this.bulbOn? "ON":"OFF"));
         callback();
       });
@@ -140,14 +150,14 @@ class Switch implements AccessoryPlugin {
   }
 
 
-  _httpRequest(url: string, body: JSON, method: string, timeout: number, callback: CharacteristicSetCallback) {
+  _httpRequest(url: string, method: string, timeout: number, body: JSON, callback: any) {
     request(url, {
       method: method,
       timeout: timeout,
       rejectUnauthorized: false,
       body: body
-    });
-    callback();
+    }, function(error: Error, response: request.Response, body: JSON){callback(error, response, body)}
+    );
   }
 
   identify(): void {
@@ -159,5 +169,11 @@ class Switch implements AccessoryPlugin {
       this.informationService,
       this.lightbulbService,
     ];
+  }
+}
+class Send {
+  private test: number;
+  constructor(config: AccessoryConfig){
+    this.test = config.test;
   }
 }
