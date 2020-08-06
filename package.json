@@ -1,6 +1,6 @@
 {
   "name": "homebridge-http-prog",
-  "version": "0.0.12-beta2.0",
+  "version": "0.0.9-beta.0",
   "description": "An example accessory plugin for programmable http services",
   "main": "dist/accessory.js",
   "scripts": {
