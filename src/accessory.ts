@@ -66,7 +66,7 @@ class Switch implements AccessoryPlugin {
 
     this.send_http = config.send_http[config.send_http.url, config.send_http.http_method];
     log.info("--------------------------------------------------------------------");
-    log.info(String(this.send_http));
+    log.info(config.send_http.url + config.send_http.http_method);
     log.info("--------------------------------------------------------------------");
 
     this.http_method = config.http_method || 'GET';
