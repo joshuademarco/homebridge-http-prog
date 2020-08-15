@@ -13,8 +13,10 @@ import {
 } from "homebridge";
 import request = require("request");
 import { timeStamp } from "console";
+import { unwatchFile } from "fs";
+import { stringify } from "querystring";
 const colorsys = require('colorsys');
-const PACKAGE = require('./package.json');
+const PACKAGE = require('../package.json');
 /**
  * Parse the config and instantiate the object.
  *
@@ -63,8 +65,8 @@ class Switch implements AccessoryPlugin {
     this.config = config;
     this.name = config.name;
 
-    this.bulb_on = config.bulb_on;
-    this.bulb_off = config.bulb_off;
+    this.bulb_on = config.bulb_on || 'on';
+    this.bulb_off = config.bulb_off || 'off';
     
     this.bulbOn = false;
     this.brightness = 100;
@@ -100,14 +102,14 @@ class Switch implements AccessoryPlugin {
       }
     }
     //Checking if neccessary arguments are given
-    if(!config.send_state_on){
-       new Error("No send_state specified! Please read " + PACKAGE.repository.url + " for more information.");
-    } else if(!config.send_state_off){
-       new Error("No send_state_off specified! Please read " + PACKAGE.repository.url + " for more information.");
-    } else if(!config.send_update){
-       new Error("No send_update specified! Please read " + PACKAGE.repository.url + " for more information.");
+    if(config.send_state_on == undefined) {
+       log.error("No send_state specified! Please read " + PACKAGE.repository.url + " for more information.");
+    } else if(config.send_state_off == undefined){
+       log.error("No send_state_off specified! Please read " + PACKAGE.repository.url + " for more information.");
+    } else if(config.send_update == undefined){
+       log.error("No send_update specified! Please read " + PACKAGE.repository.url + " for more information.");
     } else {
-      log.info("Successfully read configuration!")
+      log.info("Successfully read configuration!");
     }
 
     let send_state_on = new HTTP("send_state_on");
@@ -126,11 +128,11 @@ class Switch implements AccessoryPlugin {
         this._setColor();
         var x;
         this.bulbOn? x=send_state_on:x=send_state_off;
-        for(let e in x){
-          e.replace('%s', (this.bulbOn? this.bulb_on:this.bulb_off).toString());
-        };
-        this._httpRequest(x.http_method, x.url, x.port, x.headers, x.body, callback);
-      });
+        var y = this.bulbOn? this.bulb_on:this.bulb_off
+        var url_p = x.url.replace('%s', y); // Parsed URL
+        var body_p = JSON.stringify(x.body).replace('%s', y); // Parsed Body
+        this._httpRequest(x.http_method, url_p, x.port, x.headers, body_p, callback)
+    });
     this.lightbulbService.getCharacteristic(hap.Characteristic.Hue)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
         log.info("GET Hue: " + (this.hue));
@@ -140,12 +142,8 @@ class Switch implements AccessoryPlugin {
         this.hue = value as number;
         this._setColor();
         var x = send_update;
-        for(let e in x){
-          e.replace('%r', this.cache.r.toString());
-          e.replace('%g', this.cache.g.toString());
-          e.replace('%b', this.cache.b.toString());
-        };
-        this._httpRequest(x.http_method, x.url, x.port, x.headers, x.body, callback);
+        var rlp = this._replaceColor(x.url, x.body);
+        this._httpRequest(x.http_method, rlp.url, x.port, x.headers, rlp.body, callback);
       });
     this.lightbulbService.getCharacteristic(hap.Characteristic.Saturation)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
@@ -156,12 +154,8 @@ class Switch implements AccessoryPlugin {
         this.saturation = value as number;
         this._setColor();
         var x = send_update;
-        for(let e in x){
-          e.replace('%r', this.cache.r.toString());
-          e.replace('%g', this.cache.g.toString());
-          e.replace('%b', this.cache.b.toString());
-        };
-        this._httpRequest(x.http_method, x.url, x.port, x.headers, x.body, callback);
+        var rlp = this._replaceColor(x.url, x.body);
+        this._httpRequest(x.http_method, rlp.url, x.port, x.headers, rlp.body, callback);
       });
     this.lightbulbService.getCharacteristic(hap.Characteristic.Brightness)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
@@ -172,20 +166,24 @@ class Switch implements AccessoryPlugin {
         this.brightness = value as number;
         this._setColor();
         var x = send_update;
-        for(let e in x){
-          e.replace('%r', this.cache.r.toString());
-          e.replace('%g', this.cache.g.toString());
-          e.replace('%b', this.cache.b.toString());
-        };
-        this._httpRequest(x.http_method, x.url, x.port, x.headers, x.body, callback);
+        var rlp = this._replaceColor(x.url, x.body);
+        this._httpRequest(x.http_method, rlp.url, x.port, x.headers, rlp.body, callback);
       });
 
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "Joshua De Marco")
       .setCharacteristic(hap.Characteristic.Model, "Arduino Lightstrip LED")
       .setCharacteristic(hap.Characteristic.SerialNumber, "123-123-123");
-
     log.info("HTTP-PROG finished initializing!");
+  }
+  
+  //Following function only replaces RGB palceholders like %r, not the statement of the Switch
+  _replaceColor(url: string, body: JSON){
+    var x = this.cache;
+    var mapRGB = [x.r, x.g, x.b]
+    var new_url = url.replace('%r', x.r.toString()).replace('%g', x.g.toString()).replace('%b', x.b.toString()); //url.replace(/%r|%g|%b/gi, (_,n) => mapRGB[+n-1].toString());
+    var new_body = JSON.stringify(body).replace('%r', x.r.toString()).replace('%g', x.g.toString()).replace('%b', x.b.toString()) //JSON.stringify(body).replace(/%r|%g|%b/, (_,n) => mapRGB[+n-1].toString()); // Got a headche from looking 30min at this
+    return {url: new_url, body: new_body};
   }
 
   _setColor() {
@@ -199,24 +197,50 @@ class Switch implements AccessoryPlugin {
       color.g = 0;
       color.b = 0;
     }
-     var x = this.cache //Would for loop make more sense? correct implementations failed until now --> for(let x in color){this.cache[x] = color[x]} - cache[x] failed
-     x.r = color.r 
-     x.g = color.g
-     x.b = color.b 
-    this.log('RGB: ' + this.cache.r + this.cache.g + this.cache.b );
+    var x = this.cache //Would a for loop make more sense? correct implementations failed until now --> for(let x in color){this.cache[x] = color[x]} - cache[x] failed
+    x.r = color.r 
+    x.g = color.g
+    x.b = color.b 
+    this.log('RGB:', color.r, color.g, color.b );
   }
 
 
-  _httpRequest(method: string, url: string, port: number, headers: JSON, body: JSON, callback: CharacteristicSetCallback) {
-    request(url, {
-      method: method,
-      port: port,
-      headers: headers,
-      rejectUnauthorized: false,
-      body: body
-    }, function(error: Error, response: request.Response, body: JSON){callback()} //left in code for future error handling
-    );
+  _httpRequest(method: string, url: string, port: number, headers: JSON, body: string, callback: CharacteristicSetCallback) {
+      this.log("GOT HERE");
+      request(url, {
+        method: method,
+        port: port,
+        timeout: 1000,
+        headers: headers,
+        rejectUnauthorized: false,
+        body: body
+      }, function(error, response, body){
+        if(error){
+          console.warn('The HTTP equest returned an error ', error.message);
+          callback(error);
+        } else if (response.statusCode != 200){
+          console.warn('Client returned an HTTP error code %s: "%s"', response.statusCode, response.body);
+          callback(new Error("Received HTTP error code " + response.statusCode + ': "' + response.body + '"'));
+        } else {
+        callback(undefined);
+      }
+    });      
+ //left in code for future error handling
   }
+
+/*   _httpError(func: string, error: Error, response: any, responseBody: object, callback: any){
+    var ErrorOc = false;
+    if(error){
+      this.log.warn(func + ' returned an error: ', error.message)
+      this.log.info(func + ' returned an error: ', error.message)
+      callback(error);
+      ErrorOc = true;
+    } else if (response.statusCode != 200){
+      this.log(func + ' returned HTTP error code: %s: "%s"', response.statusCode, responseBody);
+      callback(new Error("Received HTTP error code " + response.statusCode + ': "' + responseBody + '"') );
+      ErrorOc = true;
+    } return ErrorOc;
+  } */
 
   identify(): void {
     this.log("Identify!");
