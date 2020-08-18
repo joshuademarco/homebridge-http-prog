@@ -73,8 +73,8 @@ class Switch implements AccessoryPlugin {
        log.error("No send_state specified! Please read " + PACKAGE.repository.url + " for more information.");
       } else if(config.send_update == undefined){
         log.error("No send_update specified! Please read " + PACKAGE.repository.url + " for more information.");
-      } else if(config.get == undefined){
-        log.error("No send_state_off specified! Please read " + PACKAGE.repository.url + " for more information.");
+      //} else if(config.get == undefined){
+        //log.error("No send_state_off specified! Please read " + PACKAGE.repository.url + " for more information.");
       } else {
         log.info("Successfully read configuration!");
       }
@@ -82,7 +82,7 @@ class Switch implements AccessoryPlugin {
     // Initiate new HTTP
     let send_state = new HTTP("send_state");
     let send_update = new HTTP("send_update");
-    let get = new HTTP("get");
+    //let get = new HTTP("get");
 
 
     this.lightbulbService = new hap.Service.Lightbulb(this.name);
@@ -97,7 +97,7 @@ class Switch implements AccessoryPlugin {
         var x = send_state;
         var y = this.bulbOn? this.bulb_on:this.bulb_off; // Use user preferred values of on and off 
         var url_p = x.url.replace('%s', y); // Replace value with placeholder in URL
-        var body_p = JSON.stringify(x.body).replace('%s', y); //  Same for BODY and keep it in string
+        var body_p = x.body.replace('%s', y); //  Same for BODY and keep it in string
         this._httpRequest(x.http_method, url_p, x.port, x.headers, body_p, callback);
     });
     this.lightbulbService.getCharacteristic(hap.Characteristic.Hue)
