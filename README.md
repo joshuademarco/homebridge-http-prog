@@ -1,10 +1,9 @@
 # homebridge-http-prog
-
-
 [![NPM](https://img.shields.io/npm/v/homebridge-http-prog?style=for-the-badge)](https://www.npmjs.com/package/homebridge-http-prog)
 [![Downloads](https://img.shields.io/npm/dt/homebridge-http-prog?style=for-the-badge)](https://www.npmjs.com/package/homebridge-http-prog)
 [![ISSUES](https://img.shields.io/github/issues/joshuademarco/homebridge-http-prog?style=for-the-badge)](https://github.com/joshuademarco/homebridge-http-prog/issues)  
-An example accessory plugin for programmable http
+This is an accessory plugin for the Homebridge. The plugin enables you to choose how your HTTP request should look like. It is currently in development and does not support retrieving a state yet. However, it will be implemented soon. If you have any suggestions for improvements or implementations, don't hesitate to send me a message.  
+**NOTE**: Because this is a WOK (WorkInProgress) it only implements a switch with the ability to change color. Other devices than RGB Lights will be implemented in the future. 
 
 
 ## How to install
