@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "colorsys": "^1.0.22",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "mqtt": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "10.17.19",
